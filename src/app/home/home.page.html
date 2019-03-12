@@ -7,6 +7,13 @@
 </ion-header>
 
 <ion-content padding>
-  The world is your oyster.
-  <p>If you get lost, the <a target="_blank" rel="noopener" href="https://ionicframework.com/docs/">docs</a> will be your guide.</p>
+
+  <div *ngIf="isLoggedIn">
+    Welcome {{ name }}
+
+    <ion-button (click)="logout()">Logg ut</ion-button>
+  </div>
+  <div *ngIf="!isLoggedIn">
+    <ion-button (click)="login()">Logg inn</ion-button>
+  </div>
 </ion-content>
