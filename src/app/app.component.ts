@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-
 import { Platform } from '@ionic/angular';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
@@ -14,13 +13,14 @@ export class AppComponent {
     private platform: Platform,
     private splashScreen: SplashScreen,
     private statusBar: StatusBar,
-    private oauthService: OAuthService
+    private oauthService: OAuthService,
   ) {
     this.initializeApp();
   }
 
   initializeApp() {
     this.platform.ready().then(() => {
+      this.configureInappBrowser();
       this.statusBar.styleDefault();
       this.splashScreen.hide();
       // this.configureLogin();
@@ -41,5 +41,15 @@ export class AppComponent {
 
     // Load Discovery Document and then try to login the user
     this.oauthService.loadDiscoveryDocumentAndTryLogin();
+  }
+
+  private configureInappBrowser() {
+    if (this.platform.is('cordova')) {
+      // window.open = (<any>cordova).InAppBrowser.open;
+      window.open = (url, target, features, replace) => {
+        const ref = (<any>cordova).InAppBrowser.open(url, target, features, replace);
+        return ref;
+      };
+    }
   }
 }
