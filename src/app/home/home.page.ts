@@ -42,7 +42,8 @@ export class HomePage implements OnInit {
     if (!this.platform.is('cordova')) {
       this.loginBrowser();
     } else if (this.platform.is('ios')) {
-      this.loginIos();
+      // tslint:disable-next-line:max-line-length
+      this.loginIos('https://nveb2c.b2clogin.com/nveb2c.onmicrosoft.com/oauth2/v2.0/authorize?p=B2C_1_signupsignintest&client_id=6a55a4d1-1c9f-457b-85a5-86d4315d9e96&nonce=defaultNonce&redirect_uri=http%3A%2F%2Flocalhost%3A8101&scope=openid&response_type=id_token&prompt=login');
     } else {
       const baseUrl = 'https://nveb2c.b2clogin.com/nveb2c.onmicrosoft.com/oauth2/v2.0';
       const token = await new Promise<string>(function (resolve, reject) {
@@ -125,7 +126,14 @@ export class HomePage implements OnInit {
     });
   }
 
-  loginIos() {
+  loginIos(url: string) {
+    // TODO: Implement ASWebAuthSession
+    (<any>window).plugins.ASWebAuthSession.start('ionic://localhost:8080/home', url,
+      function (msg) {
+        console.log('Success ', msg);
+      }, function (err) {
+        console.log('Error ' + err);
+      });
   }
 
   loginBrowser() {
