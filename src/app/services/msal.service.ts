@@ -23,19 +23,31 @@ export class MsalService {
     // Configure the authority for Azure AD B2C
     authority = 'https://nveb2c.b2clogin.com/tfp/' + this.tenantConfig.tenant + '/' + this.tenantConfig.signInPolicy;
 
-    /*
-     * B2C SignIn SignUp Policy Configuration
+    clientApplication: Msal.UserAgentApplication;
+
+    /**
+     *
      */
-    clientApplication = new Msal.UserAgentApplication(
-        this.tenantConfig.clientID, this.authority,
-        function (errorDesc: any, token: any, error: any, tokenType: any) {
-            console.log('error: ', errorDesc);
-        },
-        {
-            validateAuthority: false,
-            redirectUri: this.tenantConfig.redirectUri,
-        },
-    );
+    constructor() {
+        this.init();
+    }
+
+    public init() {
+        /*
+             * B2C SignIn SignUp Policy Configuration
+             */
+        this.clientApplication = new Msal.UserAgentApplication(
+            this.tenantConfig.clientID, this.authority,
+            function (errorDesc: any, token: any, error: any, tokenType: any) {
+                console.log('error: ', errorDesc);
+            },
+            {
+                validateAuthority: false,
+                redirectUri: this.tenantConfig.redirectUri,
+                // navigateToLoginRequestUrl: false,
+            },
+        );
+    }
 
     public login(): void {
         // tslint:disable-next-line:max-line-length
@@ -51,22 +63,23 @@ export class MsalService {
 
     public authenticate(): void {
         const _this = this;
-        this.clientApplication.loginPopup(this.tenantConfig.b2cScopes).then(function (idToken: any) {
-            _this.clientApplication.acquireTokenSilent(_this.tenantConfig.b2cScopes).then(
-                function (accessToken: any) {
-                    _this.saveAccessTokenToCache(accessToken);
-                }, function (error: any) {
-                    _this.clientApplication.acquireTokenPopup(_this.tenantConfig.b2cScopes).then(
-                        function (accessToken: any) {
-                            _this.saveAccessTokenToCache(accessToken);
-                            // tslint:disable-next-line:no-shadowed-variable
-                        }, function (error: any) {
-                            console.log('error: ', error);
-                        });
-                });
-        }, function (error: any) {
-            console.log('error: ', error);
-        });
+        this.clientApplication.loginRedirect(this.tenantConfig.b2cScopes);
+        // this.clientApplication.loginPopup(this.tenantConfig.b2cScopes).then(function (idToken: any) {
+        //     _this.clientApplication.acquireTokenSilent(_this.tenantConfig.b2cScopes).then(
+        //         function (accessToken: any) {
+        //             _this.saveAccessTokenToCache(accessToken);
+        //         }, function (error: any) {
+        //             _this.clientApplication.acquireTokenPopup(_this.tenantConfig.b2cScopes).then(
+        //                 function (accessToken: any) {
+        //                     _this.saveAccessTokenToCache(accessToken);
+        //                     // tslint:disable-next-line:no-shadowed-variable
+        //                 }, function (error: any) {
+        //                     console.log('error: ', error);
+        //                 });
+        //         });
+        // }, function (error: any) {
+        //     console.log('error: ', error);
+        // });
     }
 
     saveAccessTokenToCache(accessToken: string): void {
@@ -75,14 +88,11 @@ export class MsalService {
 
     logout(): void {
         this.clientApplication.logout();
+        sessionStorage.removeItem(this.B2CTodoAccessTokenKey);
     }
 
     isLoggedIn(): boolean {
         return this.clientApplication.getUser() != null;
-    }
-
-    getUserEmail(): string {
-        return ''; // this.getUser().idToken['emails'][0];
     }
 
     getUser() {
